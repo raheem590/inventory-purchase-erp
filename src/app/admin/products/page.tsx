@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { ProductForm } from "@/components/ProductForm";
 import { getCategories } from "@/actions/categories";
 import { getProducts } from "@/actions/products";
+import { getUnits } from "@/actions/uom";
 
 interface ProductsAdminPageProps {
   searchParams: Promise<{ categoryId?: string }>;
@@ -13,8 +14,11 @@ export default async function ProductsAdminPage({
   searchParams,
 }: ProductsAdminPageProps) {
   const params = await searchParams;
-  const categories = await getCategories(true);
-  const products = await getProducts(params.categoryId, true);
+  const [categories, products, units] = await Promise.all([
+    getCategories(true),
+    getProducts(params.categoryId, true),
+    getUnits(),
+  ]);
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-4 py-6">
@@ -53,6 +57,11 @@ export default async function ProductsAdminPage({
               id: category.id,
               name: category.name,
             }))}
+            units={units.map((unit) => ({
+              id: unit.id,
+              name: unit.name,
+              abbreviation: unit.abbreviation,
+            }))}
           />
         </Card>
 
@@ -70,7 +79,8 @@ export default async function ProductsAdminPage({
                   <div>
                     <p className="font-medium text-slate-900">{product.name}</p>
                     <p className="text-sm text-slate-500">
-                      {product.category.name} · {product.active ? "Active" : "Inactive"}
+                      {product.category.name} · {product.uom.abbreviation} ·{" "}
+                      {product.active ? "Active" : "Inactive"}
                     </p>
                   </div>
                   <Link

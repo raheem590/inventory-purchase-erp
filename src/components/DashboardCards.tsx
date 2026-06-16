@@ -22,6 +22,11 @@ const links = [
     title: "Manage Products",
     description: "Add or edit products in each category",
   },
+  {
+    href: "/admin/uom",
+    title: "Manage Units",
+    description: "Add or edit units of measure for products",
+  },
 ];
 
 export function DashboardCards() {

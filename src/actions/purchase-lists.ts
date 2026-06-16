@@ -29,7 +29,7 @@ export async function getPurchaseList(id: string) {
     include: {
       category: true,
       items: {
-        include: { product: true },
+        include: { product: { include: { uom: true } } },
         orderBy: { product: { sortOrder: "asc" } },
       },
     },

@@ -44,7 +44,9 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
           <tbody className="divide-y divide-slate-100">
             {list.items.map((item) => (
               <tr key={item.id}>
-                <td className="px-2 py-2 text-sm text-slate-900">{item.product.name}</td>
+                <td className="px-2 py-2 text-sm text-slate-900">
+                  {item.product.name} ({item.product.uom.abbreviation})
+                </td>
                 <td className="px-2 py-2 text-right text-sm text-slate-700">
                   {Number(item.quantity).toString()}
                 </td>

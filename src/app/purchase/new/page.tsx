@@ -19,7 +19,7 @@ export default async function NewPurchaseListPage() {
         }))}
         products={products.map((product) => ({
           id: product.id,
-          name: product.name,
+          name: `${product.name} (${product.uom.abbreviation})`,
           categoryId: product.categoryId,
         }))}
       />

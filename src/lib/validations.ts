@@ -14,6 +14,14 @@ export const categorySchema = z.object({
 export const productSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   categoryId: z.string().min(1, "Category is required"),
+  uomId: z.string().min(1, "Unit of measure is required"),
+  sortOrder: z.coerce.number().int().min(0).default(0),
+  active: z.coerce.boolean().default(true),
+});
+
+export const uomSchema = z.object({
+  name: z.string().min(1, "Unit name is required").max(100),
+  abbreviation: z.string().min(1, "Abbreviation is required").max(20),
   sortOrder: z.coerce.number().int().min(0).default(0),
   active: z.coerce.boolean().default(true),
 });

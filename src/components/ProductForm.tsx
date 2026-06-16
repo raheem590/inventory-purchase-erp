@@ -18,18 +18,26 @@ interface CategoryOption {
   name: string;
 }
 
+interface UnitOption {
+  id: string;
+  name: string;
+  abbreviation: string;
+}
+
 interface ProductFormProps {
   categories: CategoryOption[];
+  units: UnitOption[];
   product?: {
     id: string;
     name: string;
     categoryId: string;
+    uomId: string;
     sortOrder: number;
     active: boolean;
   };
 }
 
-export function ProductForm({ categories, product }: ProductFormProps) {
+export function ProductForm({ categories, units, product }: ProductFormProps) {
   const action = product
     ? updateProductAction.bind(null, product.id)
     : createProductAction;
@@ -56,6 +64,18 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <div>
+        <label htmlFor="uomId" className="mb-2 block text-sm font-medium text-slate-700">
+          Unit of measure
+        </label>
+        <Select id="uomId" name="uomId" defaultValue={product?.uomId ?? units[0]?.id ?? ""} required>
+          {units.map((unit) => (
+            <option key={unit.id} value={unit.id}>
+              {unit.name} ({unit.abbreviation})
             </option>
           ))}
         </Select>

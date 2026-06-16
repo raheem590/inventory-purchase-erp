@@ -25,6 +25,51 @@ const seedData = [
 ];
 
 async function main() {
+  const piece = await prisma.unitOfMeasure.upsert({
+    where: { abbreviation: "pc" },
+    update: {
+      name: "Piece",
+      sortOrder: 1,
+      active: true,
+    },
+    create: {
+      name: "Piece",
+      abbreviation: "pc",
+      sortOrder: 1,
+      active: true,
+    },
+  });
+
+  await prisma.unitOfMeasure.upsert({
+    where: { abbreviation: "kg" },
+    update: {
+      name: "Kilogram",
+      sortOrder: 2,
+      active: true,
+    },
+    create: {
+      name: "Kilogram",
+      abbreviation: "kg",
+      sortOrder: 2,
+      active: true,
+    },
+  });
+
+  await prisma.unitOfMeasure.upsert({
+    where: { abbreviation: "ltr" },
+    update: {
+      name: "Liter",
+      sortOrder: 3,
+      active: true,
+    },
+    create: {
+      name: "Liter",
+      abbreviation: "ltr",
+      sortOrder: 3,
+      active: true,
+    },
+  });
+
   for (const category of seedData) {
     const createdCategory = await prisma.category.upsert({
       where: { slug: category.slug },
@@ -52,10 +97,12 @@ async function main() {
         update: {
           sortOrder: index + 1,
           active: true,
+          uomId: piece.id,
         },
         create: {
           name: productName,
           categoryId: createdCategory.id,
+          uomId: piece.id,
           sortOrder: index + 1,
           active: true,
         },

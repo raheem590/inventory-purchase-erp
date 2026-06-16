@@ -14,7 +14,7 @@ export async function getProducts(categoryId?: string, includeInactive = false) 
       ...(includeInactive ? {} : { active: true }),
     },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    include: { category: true },
+    include: { category: true, uom: true },
   });
 }
 
@@ -22,7 +22,7 @@ export async function getProduct(id: string) {
   await requireAuth();
   return prisma.product.findUnique({
     where: { id },
-    include: { category: true },
+    include: { category: true, uom: true },
   });
 }
 
@@ -35,6 +35,7 @@ export async function createProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     categoryId: formData.get("categoryId"),
+    uomId: formData.get("uomId"),
     sortOrder: formData.get("sortOrder") || 0,
     active: formData.get("active") === "on" || formData.get("active") === "true",
   });
@@ -71,6 +72,7 @@ export async function updateProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     categoryId: formData.get("categoryId"),
+    uomId: formData.get("uomId"),
     sortOrder: formData.get("sortOrder") || 0,
     active: formData.get("active") === "on" || formData.get("active") === "true",
   });
