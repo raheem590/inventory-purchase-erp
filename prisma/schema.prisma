@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  slug          String         @unique
+  sortOrder     Int            @default(0)
+  active        Boolean        @default(true)
+  products      Product[]
+  purchaseLists PurchaseList[]
+  createdAt     DateTime       @default(now())
+}
+
+model Product {
+  id         String             @id @default(cuid())
+  name       String
+  categoryId String
+  category   Category           @relation(fields: [categoryId], references: [id])
+  sortOrder  Int                @default(0)
+  active     Boolean            @default(true)
+  listItems  PurchaseListItem[]
+  createdAt  DateTime           @default(now())
+
+  @@unique([categoryId, name])
+}
+
+model PurchaseList {
+  id         String             @id @default(cuid())
+  categoryId String
+  category   Category           @relation(fields: [categoryId], references: [id])
+  listDate   DateTime           @db.Date
+  items      PurchaseListItem[]
+  createdAt  DateTime           @default(now())
+}
+
+model PurchaseListItem {
+  id             String       @id @default(cuid())
+  purchaseListId String
+  productId      String
+  quantity       Decimal      @db.Decimal(10, 2)
+  purchaseList   PurchaseList @relation(fields: [purchaseListId], references: [id], onDelete: Cascade)
+  product        Product      @relation(fields: [productId], references: [id])
+
+  @@unique([purchaseListId, productId])
+}

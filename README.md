@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Inventory Purchase ERP
 
-## Getting Started
+Category-based purchase list ERP with single 6-digit PIN login, built with Next.js and PostgreSQL.
 
-First, run the development server:
+## Features
+
+- 6-digit PIN authentication
+- Purchase list categories (Vegetables Market, Stationery Hyder, Stationery Afsal)
+- Admin screens to manage categories and products
+- Create purchase lists with checkbox + quantity per item
+- Save lists by date and view history
+- Printable purchase list detail page
+
+## Tech Stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- PostgreSQL + Prisma
+- iron-session + bcryptjs
+
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy environment file and update values:
+
+```bash
+cp .env.example .env
+```
+
+3. Generate a PIN hash:
+
+```bash
+node -e "console.log(require('bcryptjs').hashSync('123456', 10))"
+```
+
+Put the output in `PIN_HASH` and set a long random `SESSION_SECRET`.
+
+4. Start a PostgreSQL database and set `DATABASE_URL` in `.env`.
+
+5. Run migrations and seed:
+
+```bash
+npx prisma migrate dev --name init
+npm run db:seed
+```
+
+6. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and log in with your PIN.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vercel Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push this project to GitHub.
+2. Import the repo in Vercel.
+3. Add **Vercel Postgres** storage to the project.
+4. Set environment variables:
+   - `DATABASE_URL` (from Vercel Postgres)
+   - `PIN_HASH`
+   - `SESSION_SECRET`
+5. Deploy. The build runs `prisma generate`, `prisma migrate deploy`, and `next build`.
+6. Seed production data once:
 
-## Learn More
+```bash
+DATABASE_URL="your_production_url" npm run db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — start development server
+- `npm run build` — production build
+- `npm run db:seed` — seed categories and products
+- `npm run db:migrate` — apply migrations in production
