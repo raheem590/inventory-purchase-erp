@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PrintButton } from "@/components/PrintButton";
+import { CopyPurchaseListButton } from "@/components/CopyPurchaseListButton";
 import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { getPurchaseList } from "@/actions/purchase-lists";
@@ -18,13 +18,16 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
     notFound();
   }
 
+  const copyLines = list.items.map(
+    (item) =>
+      `${item.product.name} ${Number(item.quantity).toString()} ${item.product.uom.abbreviation}`,
+  );
+
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-6">
-      <div className="no-print">
-        <AppHeader title="Purchase List" backHref="/purchase/history" />
-      </div>
+      <AppHeader title="Purchase List" backHref="/purchase/history" />
 
-      <Card className="print-container">
+      <Card>
         <div className="mb-6 border-b border-slate-200 pb-4">
           <h2 className="text-2xl font-bold text-slate-900">{list.category.name}</h2>
           <p className="mt-1 text-sm text-slate-600">Date: {formatDate(list.listDate)}</p>
@@ -44,11 +47,9 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
           <tbody className="divide-y divide-slate-100">
             {list.items.map((item) => (
               <tr key={item.id}>
-                <td className="px-2 py-2 text-sm text-slate-900">
-                  {item.product.name} ({item.product.uom.abbreviation})
-                </td>
+                <td className="px-2 py-2 text-sm text-slate-900">{item.product.name}</td>
                 <td className="px-2 py-2 text-right text-sm text-slate-700">
-                  {Number(item.quantity).toString()}
+                  {Number(item.quantity).toString()} {item.product.uom.abbreviation}
                 </td>
               </tr>
             ))}
@@ -56,8 +57,8 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
         </table>
       </Card>
 
-      <div className="no-print mt-6 flex gap-3">
-        <PrintButton />
+      <div className="mt-6 flex gap-3">
+        <CopyPurchaseListButton lines={copyLines} />
         <Link
           href="/purchase/new"
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
