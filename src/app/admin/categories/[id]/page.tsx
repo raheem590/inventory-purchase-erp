@@ -19,7 +19,7 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6">
       <AppHeader title="Edit Category" backHref="/admin/categories" />
-      <Card>
+      <Card accent="violet">
         <CategoryForm category={category} />
       </Card>
     </main>

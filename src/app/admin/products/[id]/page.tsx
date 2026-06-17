@@ -25,7 +25,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6">
       <AppHeader title="Edit Product" backHref="/admin/products" />
-      <Card>
+      <Card accent="amber">
         <ProductForm
           product={product}
           categories={categories.map((category) => ({

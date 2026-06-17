@@ -5,6 +5,7 @@ import { ProductForm } from "@/components/ProductForm";
 import { getCategories } from "@/actions/categories";
 import { getProducts } from "@/actions/products";
 import { getUnits } from "@/actions/uom";
+import { cn } from "@/lib/utils";
 
 interface ProductsAdminPageProps {
   searchParams: Promise<{ categoryId?: string }>;
@@ -26,11 +27,12 @@ export default async function ProductsAdminPage({
       <div className="mb-6 flex flex-wrap gap-2">
         <Link
           href="/admin/products"
-          className={`rounded-lg px-3 py-2 text-sm font-medium ${
+          className={cn(
+            "rounded-xl px-3 py-2 text-sm font-semibold transition",
             !params.categoryId
-              ? "bg-emerald-600 text-white"
-              : "border border-slate-300 text-slate-700 hover:bg-slate-50"
-          }`}
+              ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md"
+              : "border border-slate-200 bg-white text-slate-700 hover:bg-amber-50",
+          )}
         >
           All
         </Link>
@@ -38,11 +40,12 @@ export default async function ProductsAdminPage({
           <Link
             key={category.id}
             href={`/admin/products?categoryId=${category.id}`}
-            className={`rounded-lg px-3 py-2 text-sm font-medium ${
+            className={cn(
+              "rounded-xl px-3 py-2 text-sm font-semibold transition",
               params.categoryId === category.id
-                ? "bg-emerald-600 text-white"
-                : "border border-slate-300 text-slate-700 hover:bg-slate-50"
-            }`}
+                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md"
+                : "border border-slate-200 bg-white text-slate-700 hover:bg-amber-50",
+            )}
           >
             {category.name}
           </Link>
@@ -50,8 +53,8 @@ export default async function ProductsAdminPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Add product</h2>
+        <Card accent="amber">
+          <h2 className="mb-4 text-lg font-bold text-slate-900">Add product</h2>
           <ProductForm
             categories={categories.map((category) => ({
               id: category.id,
@@ -65,8 +68,8 @@ export default async function ProductsAdminPage({
           />
         </Card>
 
-        <Card>
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Products</h2>
+        <Card accent="amber">
+          <h2 className="mb-4 text-lg font-bold text-slate-900">Products</h2>
           <div className="space-y-3">
             {products.length === 0 ? (
               <p className="text-sm text-slate-500">No products found.</p>
@@ -74,10 +77,10 @@ export default async function ProductsAdminPage({
               products.map((product) => (
                 <div
                   key={product.id}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-3"
+                  className="flex items-center justify-between rounded-xl border border-amber-100 bg-amber-50/50 px-3 py-3 transition hover:bg-amber-50"
                 >
                   <div>
-                    <p className="font-medium text-slate-900">{product.name}</p>
+                    <p className="font-semibold text-slate-900">{product.name}</p>
                     <p className="text-sm text-slate-500">
                       {product.category.name} · {product.uom.abbreviation} ·{" "}
                       {product.active ? "Active" : "Inactive"}
@@ -85,7 +88,7 @@ export default async function ProductsAdminPage({
                   </div>
                   <Link
                     href={`/admin/products/${product.id}`}
-                    className="text-sm font-medium text-emerald-700 hover:underline"
+                    className="text-sm font-semibold text-amber-700 hover:underline"
                   >
                     Edit
                   </Link>

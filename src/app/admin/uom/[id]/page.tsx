@@ -19,7 +19,7 @@ export default async function EditUomPage({ params }: EditUomPageProps) {
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6">
       <AppHeader title="Edit Unit" backHref="/admin/uom" />
-      <Card>
+      <Card accent="rose">
         <UomForm unit={unit} />
       </Card>
     </main>

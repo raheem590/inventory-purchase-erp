@@ -27,18 +27,16 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-6">
       <AppHeader title="Purchase List" backHref="/purchase/history" />
 
-      <Card>
-        <div className="mb-6 border-b border-slate-200 pb-4">
-          <h2 className="text-2xl font-bold text-slate-900">{list.category.name}</h2>
-          <p className="mt-1 text-sm text-slate-600">Date: {formatDate(list.listDate)}</p>
+      <Card accent="emerald">
+        <div className="mb-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-4 text-white">
+          <h2 className="text-2xl font-bold">{list.category.name}</h2>
+          <p className="mt-1 text-sm text-emerald-50">Date: {formatDate(list.listDate)}</p>
         </div>
 
         <table className="min-w-full divide-y divide-slate-200">
-          <thead>
+          <thead className="bg-slate-50">
             <tr>
-              <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700">
-                Product
-              </th>
+              <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700">Product</th>
               <th className="px-2 py-2 text-right text-sm font-semibold text-slate-700">
                 Quantity
               </th>
@@ -46,10 +44,15 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
           </thead>
           <tbody className="divide-y divide-slate-100">
             {list.items.map((item) => (
-              <tr key={item.id}>
-                <td className="px-2 py-2 text-sm text-slate-900">{item.product.name}</td>
+              <tr key={item.id} className="hover:bg-emerald-50/50">
+                <td className="px-2 py-2 text-sm font-medium text-slate-900">
+                  {item.product.name}
+                </td>
                 <td className="px-2 py-2 text-right text-sm text-slate-700">
-                  {Number(item.quantity).toString()} {item.product.uom.abbreviation}
+                  {Number(item.quantity).toString()}{" "}
+                  <span className="font-semibold text-emerald-700">
+                    {item.product.uom.abbreviation}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -61,7 +64,7 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
         <CopyPurchaseListButton lines={copyLines} />
         <Link
           href="/purchase/new"
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
         >
           Create another list
         </Link>
