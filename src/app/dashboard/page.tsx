@@ -12,7 +12,12 @@ export default function DashboardPage() {
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-200">
             <LayoutDashboard className="h-7 w-7 text-white" />
           </div>
-          
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Welcome back</h2>
+            <p className="text-sm text-slate-600">
+              Choose a module to create purchase lists or manage your inventory data.
+            </p>
+          </div>
         </div>
       </Card>
       <DashboardCards />
