@@ -6,6 +6,18 @@ import { prisma } from "@/lib/db";
 import { productSchema } from "@/lib/validations";
 import type { ActionState } from "@/actions/categories";
 
+export type QuickAddProductResult =
+  | { error: string }
+  | {
+      product: {
+        id: string;
+        name: string;
+        displayName: string;
+        categoryId: string;
+        uomAbbreviation: string;
+      };
+    };
+
 export async function getProducts(categoryId?: string, includeInactive = false) {
   await requireAuth();
   return prisma.product.findMany({
@@ -100,4 +112,52 @@ export async function updateProductAction(
 
   revalidatePath("/admin/products");
   return { success: "Product updated" };
+}
+
+export async function quickAddProductAction(
+  name: string,
+  categoryId: string,
+  uomId: string,
+): Promise<QuickAddProductResult> {
+  await requireAuth();
+
+  const parsed = productSchema.safeParse({
+    name: name.trim(),
+    categoryId,
+    uomId,
+    sortOrder: 0,
+    active: true,
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid data" };
+  }
+
+  const existing = await prisma.product.findFirst({
+    where: {
+      categoryId: parsed.data.categoryId,
+      name: { equals: parsed.data.name, mode: "insensitive" },
+    },
+    include: { uom: true },
+  });
+
+  const product =
+    existing ??
+    (await prisma.product.create({
+      data: parsed.data,
+      include: { uom: true },
+    }));
+
+  revalidatePath("/purchase/new");
+  revalidatePath("/admin/products");
+
+  return {
+    product: {
+      id: product.id,
+      name: product.name,
+      displayName: `${product.name} (${product.uom.abbreviation})`,
+      categoryId: product.categoryId,
+      uomAbbreviation: product.uom.abbreviation,
+    },
+  };
 }

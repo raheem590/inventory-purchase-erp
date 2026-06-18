@@ -2,12 +2,14 @@ import { AppHeader } from "@/components/AppHeader";
 import { PurchaseListForm } from "@/components/PurchaseListForm";
 import { getCategories } from "@/actions/categories";
 import { getProducts } from "@/actions/products";
+import { getUnits } from "@/actions/uom";
 import { ClipboardList } from "lucide-react";
 
 export default async function NewPurchaseListPage() {
-  const [categories, products] = await Promise.all([
+  const [categories, products, units] = await Promise.all([
     getCategories(),
     getProducts(),
+    getUnits(),
   ]);
 
   return (
@@ -28,8 +30,14 @@ export default async function NewPurchaseListPage() {
         }))}
         products={products.map((product) => ({
           id: product.id,
-          name: `${product.name} (${product.uom.abbreviation})`,
+          name: product.name,
+          displayName: `${product.name} (${product.uom.abbreviation})`,
           categoryId: product.categoryId,
+        }))}
+        units={units.map((unit) => ({
+          id: unit.id,
+          name: unit.name,
+          abbreviation: unit.abbreviation,
         }))}
       />
     </main>

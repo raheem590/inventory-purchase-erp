@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useActionState } from "react";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { createPurchaseListAction } from "@/actions/purchase-lists";
+import { quickAddProductAction } from "@/actions/products";
 import type { ActionState } from "@/actions/categories";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,23 +23,41 @@ interface CategoryOption {
 interface ProductOption {
   id: string;
   name: string;
+  displayName: string;
   categoryId: string;
+}
+
+interface UnitOption {
+  id: string;
+  name: string;
+  abbreviation: string;
 }
 
 interface PurchaseListFormProps {
   categories: CategoryOption[];
   products: ProductOption[];
+  units: UnitOption[];
 }
 
-export function PurchaseListForm({ categories, products }: PurchaseListFormProps) {
+export function PurchaseListForm({
+  categories,
+  products: initialProducts,
+  units,
+}: PurchaseListFormProps) {
   const [state, formAction, pending] = useActionState(
     createPurchaseListAction,
     initialState,
   );
+  const [products, setProducts] = useState(initialProducts);
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [quantities, setQuantities] = useState<Record<string, string>>({});
+  const [quickAddUomId, setQuickAddUomId] = useState(units[0]?.id ?? "");
+  const [quickAddPending, setQuickAddPending] = useState(false);
+  const [quickAddError, setQuickAddError] = useState<string | null>(null);
+
+  const currentCategory = categories.find((category) => category.id === categoryId);
 
   const categoryProducts = useMemo(
     () => products.filter((product) => product.categoryId === categoryId),
@@ -49,9 +68,22 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
     const query = search.trim().toLowerCase();
     if (!query) return categoryProducts;
     return categoryProducts.filter((product) =>
-      product.name.toLowerCase().includes(query),
+      product.displayName.toLowerCase().includes(query),
     );
   }, [categoryProducts, search]);
+
+  const hasExactNameMatch = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return false;
+    return categoryProducts.some(
+      (product) => product.name.toLowerCase() === query,
+    );
+  }, [categoryProducts, search]);
+
+  const showQuickAdd =
+    search.trim().length > 0 &&
+    visibleProducts.length === 0 &&
+    !hasExactNameMatch;
 
   function toggleProduct(productId: string, checked: boolean) {
     setSelected((prev) => ({ ...prev, [productId]: checked }));
@@ -61,7 +93,58 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
         delete next[productId];
         return next;
       });
+    } else if (!quantities[productId]) {
+      setQuantities((prev) => ({ ...prev, [productId]: "1" }));
     }
+  }
+
+  async function handleQuickAdd() {
+    const trimmedName = search.trim();
+    if (!trimmedName || !quickAddUomId) return;
+
+    setQuickAddPending(true);
+    setQuickAddError(null);
+
+    const result = await quickAddProductAction(trimmedName, categoryId, quickAddUomId);
+
+    setQuickAddPending(false);
+
+    if ("error" in result) {
+      setQuickAddError(result.error);
+      return;
+    }
+
+    const { product } = result;
+
+    setProducts((prev) => {
+      const exists = prev.some((item) => item.id === product.id);
+      if (exists) {
+        return prev.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                name: product.name,
+                displayName: product.displayName,
+                categoryId: product.categoryId,
+              }
+            : item,
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: product.id,
+          name: product.name,
+          displayName: product.displayName,
+          categoryId: product.categoryId,
+        },
+      ];
+    });
+
+    setSelected((prev) => ({ ...prev, [product.id]: true }));
+    setQuantities((prev) => ({ ...prev, [product.id]: "1" }));
+    setSearch("");
+    setQuickAddError(null);
   }
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
@@ -83,6 +166,7 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
                 setSearch("");
                 setSelected({});
                 setQuantities({});
+                setQuickAddError(null);
               }}
               required
             >
@@ -120,7 +204,10 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
               type="search"
               placeholder="Type to filter products..."
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setQuickAddError(null);
+              }}
               className="pl-10"
             />
           </div>
@@ -128,6 +215,50 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
             {selectedCount} selected · {visibleProducts.length} shown
           </p>
         </div>
+
+        {showQuickAdd ? (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/80 p-4">
+            <p className="text-sm font-medium text-amber-900">
+              &quot;{search.trim()}&quot; not found in {currentCategory?.name ?? "this category"}.
+              Add it now?
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
+              <div>
+                <label
+                  htmlFor="quickAddUom"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
+                  Unit of measure
+                </label>
+                <Select
+                  id="quickAddUom"
+                  value={quickAddUomId}
+                  onChange={(event) => setQuickAddUomId(event.target.value)}
+                >
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name} ({unit.abbreviation})
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button
+                  type="button"
+                  onClick={handleQuickAdd}
+                  disabled={quickAddPending || !quickAddUomId}
+                  className="w-full gap-2 sm:w-auto"
+                >
+                  <Plus className="h-4 w-4" />
+                  {quickAddPending ? "Adding..." : "Add and select"}
+                </Button>
+              </div>
+            </div>
+            {quickAddError ? (
+              <p className="mt-2 text-sm text-rose-700">{quickAddError}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="overflow-hidden rounded-xl border border-slate-200">
           <table className="min-w-full divide-y divide-slate-200">
@@ -139,13 +270,13 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {categoryProducts.length === 0 ? (
+              {categoryProducts.length === 0 && !showQuickAdd ? (
                 <tr>
                   <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
                     No active products in this category.
                   </td>
                 </tr>
-              ) : visibleProducts.length === 0 ? (
+              ) : visibleProducts.length === 0 && !showQuickAdd ? (
                 <tr>
                   <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
                     No products match your search.
@@ -171,7 +302,7 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
                         />
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                        {product.name}
+                        {product.displayName}
                       </td>
                       <td className="px-4 py-3">
                         {isChecked ? (
@@ -201,7 +332,7 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
         </div>
       </Card>
 
-      {categoryProducts
+      {products
         .filter((product) => selected[product.id])
         .map((product) => (
           <div key={`hidden-${product.id}`} className="hidden" aria-hidden>
@@ -213,7 +344,11 @@ export function PurchaseListForm({ categories, products }: PurchaseListFormProps
       {state.error ? (
         <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{state.error}</p>
       ) : null}
-      <Button type="submit" disabled={pending || categoryProducts.length === 0} className="w-full sm:w-auto">
+      <Button
+        type="submit"
+        disabled={pending || selectedCount === 0}
+        className="w-full sm:w-auto"
+      >
         {pending ? "Saving..." : "Save purchase list"}
       </Button>
     </form>
